@@ -20,8 +20,9 @@
   </include>
 
   <!-- MAPPING -->
-  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" />
-
+  <node pkg="gmapping" type="slam_gmapping" name="gmapping_record_map" output="log" >
+    <param name="delta" value="0.025"/>
+  </node>
   <!-- VISUALIZE -->
   <node name="rviz" pkg="rviz" type="rviz" output="log" args="-d $(find stretch_navigation)/rviz/mapping.rviz" if="$(arg rviz)" />
 

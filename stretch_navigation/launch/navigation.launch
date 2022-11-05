@@ -4,21 +4,37 @@
   <arg name="rviz"     default="true" doc="whether to show Rviz" />
 
   <!-- STRETCH DRIVER -->
-  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
+  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="false"/>
   <param name="/stretch_driver/mode" type="string" value="navigation" />
   <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
 
-  <!-- CENTERED BASE LINK -->
-  <node name="centered_base_link_tf_publisher" pkg="tf" type="static_transform_publisher" args="-0.1 0 0 0 0 0 1 /base_link /centered_base_link 100" />
-
   <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
+  <include file="$(find rplidar_ros_touri)/launch/rplidar.launch" />
+  <remap from="/filtered/scan" to="/scan" />
+  <!-- -->
+  
+  <!-- LASER SCAN MATCHER FOR ODOMETRY -->
+  <!--include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" /-->
+  <!-- -->
+
 
   <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
 
+  <!-- IMU FILTER -->
+  <include file="$(find stretch_core)/launch/imu_filter.launch" />
+  <!-- -->
+
+  <!-- ROBOT LOCALIZATION FILTER -->
+  <include file="$(find stretch_core)/launch/stretch_ekf_nav.launch" />
+  <!-- -->
+
   <!-- LOCALIZATION -->
-  <include file="$(find amcl)/examples/amcl_diff.launch" />
+  <include file="$(find stretch_navigation)/launch/include/amcl.launch" />
+<!-- 
+  <node name="odomf_node" pkg="stretch_navigation" type="odomf_node">
+  </node> -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="odomf_tf" args="0 0 0 0 0 0 odom base_link 100" /> -->
 
   <!-- NAVIGATION -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
@@ -27,8 +43,9 @@
     <rosparam file="$(find stretch_navigation)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
-
+    <rosparam file="$(find stretch_navigation)/config/move_base_params.yaml" command="load" />
     <remap from="/cmd_vel" to="/stretch/cmd_vel" />
+    <remap from="/odom" to="/odometry/filtered_map" />
   </node>
 
   <!-- VISUALIZE -->
